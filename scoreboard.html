@@ -107,7 +107,7 @@ body{background:#0a0a0f;color:#fff;font-family:'Arial Black',Arial,sans-serif;ov
 .tc-col{display:flex;flex-direction:column;gap:5px;padding:0 4px}
 .tc-col-header{font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.25);text-transform:uppercase;text-align:center;padding-bottom:2px}
 .champ-card{flex:1;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:40px;padding:24px 40px;border:1px solid rgba(255,255,255,0.12)}
-.champ-label{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-bottom:6px}
+.champ-label{font-size:60px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-bottom:6px}
 .champ-crest{height:130px;object-fit:contain}
 .champ-info{flex:1}
 .champ-name{font-size:72px;font-weight:900;text-transform:uppercase;letter-spacing:2px;line-height:1}
@@ -294,7 +294,7 @@ function renderChampions(data) {
   document.getElementById('champ-total').innerHTML = `
     <img class="champ-crest" src="${tm.img}" alt="${totalChamp.team}">
     <div class="champ-info">
-      <div class="champ-label">House Cup Leader</div>
+      <div class="champ-label">House Cup Winner</div>
       <div class="champ-name" style="color:${tm.light}">${totalChamp.team}</div>
       <div class="champ-score-row">
         <div class="champ-total" style="color:#FFD700">${totalChamp.total}</div>
