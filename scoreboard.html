@@ -100,6 +100,27 @@ body{background:#0a0a0f;color:#fff;font-family:'Arial Black',Arial,sans-serif;ov
 .bb-total{font-size:78px;font-weight:900;text-align:right;color:#fff;line-height:1}
 .bb-total.flash{animation:scoreflash 1s ease}
 
+
+/* ===================== VIEW 5: TWO-COLUMN STANDINGS ===================== */
+#view5{flex:1;padding:6px 16px;display:grid;grid-template-columns:1fr 2px 1fr;gap:0 12px;overflow:hidden}
+.tc-divider{background:rgba(255,255,255,0.1);border-radius:2px;align-self:stretch}
+.tc-col{display:flex;flex-direction:column;gap:5px;padding:0 4px}
+.tc-col-header{font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.25);text-transform:uppercase;text-align:center;padding-bottom:2px}
+.tc2-row{display:grid;grid-template-columns:68px 60px 1fr 120px 160px;align-items:center;gap:6px;padding:5px 10px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);transition:background 0.3s}
+.tc2-row.gold{background:rgba(255,215,0,0.12);border-color:rgba(255,215,0,0.3)}
+.tc2-row.silver{background:rgba(192,192,192,0.1);border-color:rgba(192,192,192,0.22)}
+.tc2-row.bronze{background:rgba(205,127,50,0.1);border-color:rgba(205,127,50,0.22)}
+.tc2-rank{font-size:52px;font-weight:900;color:rgba(255,255,255,0.2);text-align:center;line-height:1}
+.tc2-rank.r1{color:#FFD700;font-size:62px}
+.tc2-rank.r2{color:#C0C0C0;font-size:58px}
+.tc2-rank.r3{color:#CD7F32;font-size:54px}
+.tc2-crest{height:52px;object-fit:contain}
+.tc2-name{font-size:32px;font-weight:900;letter-spacing:1px;text-transform:uppercase}
+.tc2-rally{font-size:34px;font-weight:900;color:#7ec8e3;text-align:right}
+.tc2-total{font-size:50px;font-weight:900;text-align:right;color:#fff;line-height:1}
+.tc2-total.flash{animation:scoreflash 1s ease}
+.tc2-pre{font-size:13px;color:rgba(255,255,255,0.3);text-align:right;margin-top:1px}
+
 .hidden{display:none!important}
 </style>
 </head>
@@ -121,6 +142,7 @@ body{background:#0a0a0f;color:#fff;font-family:'Arial Black',Arial,sans-serif;ov
     <button class="view-tab" onclick="switchView(2)">2 · Cards</button>
     <button class="view-tab" onclick="switchView(3)">3 · Spotlight</button>
     <button class="view-tab" onclick="switchView(4)">4 · Big Board</button>
+    <button class="view-tab" onclick="switchView(5)">5 · Two-Column</button>
   </div>
 
   <!-- VIEW 1: LEADERBOARD -->
@@ -146,6 +168,13 @@ body{background:#0a0a0f;color:#fff;font-family:'Arial Black',Arial,sans-serif;ov
   <!-- VIEW 4: ABBREVIATED BIG BOARD -->
   <div id="view4" class="hidden">
     <div id="bb-rows"></div>
+  </div>
+
+  <!-- VIEW 5: TWO-COLUMN STANDINGS -->
+  <div id="view5" class="hidden">
+    <div class="tc-col" id="tc-col-left"></div>
+    <div class="tc-divider"></div>
+    <div class="tc-col" id="tc-col-right"></div>
   </div>
 
   <div class="status">
@@ -196,7 +225,7 @@ let scores = [];
 
 function switchView(n) {
   currentView = n;
-  [1,2,3,4].forEach(i => {
+  [1,2,3,4,5].forEach(i => {
     document.getElementById('view'+i).classList.toggle('hidden', i !== n);
   });
   document.querySelectorAll('.view-tab').forEach((t,i) => t.classList.toggle('active', i+1===n));
@@ -208,6 +237,7 @@ document.addEventListener('keydown', e => {
   if (e.key === '2') switchView(2);
   if (e.key === '3') switchView(3);
   if (e.key === '4') switchView(4);
+  if (e.key === '5') switchView(5);
 });
 
 function parseCSV(text) {
@@ -343,12 +373,40 @@ function renderBigBoard(data) {
   });
 }
 
+
+function renderTwoColumn(data) {
+  const left = document.getElementById('tc-col-left');
+  const right = document.getElementById('tc-col-right');
+  left.innerHTML = '<div class="tc-col-header">1 — 4</div>';
+  right.innerHTML = '<div class="tc-col-header">5 — 8</div>';
+  data.forEach((d, i) => {
+    const meta = getMeta(d.team);
+    const rankClass = ['r1','r2','r3'][i] || '';
+    const rowClass = ['gold','silver','bronze'][i] || '';
+    const totalChanged = prevScores[d.team] !== undefined && prevScores[d.team] !== d.total;
+    const row = document.createElement('div');
+    row.className = `tc2-row ${rowClass}`;
+    row.innerHTML = `
+      <div class="tc2-rank ${rankClass}">${i+1}</div>
+      <img class="tc2-crest" src="${meta.img}" alt="${d.team}">
+      <div class="tc2-name" style="color:${meta.light}">${d.team}</div>
+      <div class="tc2-rally">${d.rally}</div>
+      <div>
+        <div class="tc2-total${totalChanged?' flash':''}">${d.total}</div>
+        <div class="tc2-pre">pre: ${d.pre}</div>
+      </div>
+    `;
+    (i < 4 ? left : right).appendChild(row);
+  });
+}
+
 function renderAll() {
   if (!scores.length) return;
   if (currentView === 1) renderLeaderboard(scores);
   if (currentView === 2) renderCards(scores);
   if (currentView === 3) renderSpotlight(scores);
   if (currentView === 4) renderBigBoard(scores);
+  if (currentView === 5) renderTwoColumn(scores);
 }
 
 async function fetchScores() {
