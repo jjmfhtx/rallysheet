@@ -84,8 +84,8 @@ body{background:#0a0a0f;color:#fff;font-family:'Arial Black',Arial,sans-serif;ov
 @keyframes scoreflash{0%{color:#FFD700;transform:scale(1.15)}100%{color:inherit;transform:scale(1)}}
 
 /* ===================== VIEW 4: ABBREVIATED BIG BOARD ===================== */
-#view4{flex:1;padding:6px 20px;display:flex;flex-direction:column;gap:4px;overflow:hidden}
-.bb-row{display:grid;grid-template-columns:60px 80px 160px 1fr 200px 260px;align-items:center;gap:8px;padding:5px 16px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);transition:background 0.3s}
+#view4{flex:1;padding:6px 16px;display:grid;grid-template-columns:1fr 2px 1fr;gap:0 12px;overflow:hidden}
+.bb-row{display:grid;grid-template-columns:60px 64px 130px 1fr 130px 170px;align-items:center;gap:6px;padding:5px 10px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);transition:background 0.3s}
 .bb-row.gold{background:rgba(255,215,0,0.12);border-color:rgba(255,215,0,0.3)}
 .bb-row.silver{background:rgba(192,192,192,0.1);border-color:rgba(192,192,192,0.25)}
 .bb-row.bronze{background:rgba(205,127,50,0.1);border-color:rgba(205,127,50,0.25)}
@@ -167,7 +167,9 @@ body{background:#0a0a0f;color:#fff;font-family:'Arial Black',Arial,sans-serif;ov
 
   <!-- VIEW 4: ABBREVIATED BIG BOARD -->
   <div id="view4" class="hidden">
-    <div id="bb-rows"></div>
+    <div class="tc-col" id="bb-col-left"></div>
+    <div class="tc-divider"></div>
+    <div class="tc-col" id="bb-col-right"></div>
   </div>
 
   <!-- VIEW 5: TWO-COLUMN STANDINGS -->
@@ -349,11 +351,10 @@ function renderSpotlight(data) {
 
 
 function renderBigBoard(data) {
-  const container = document.getElementById('bb-rows');
-  container.innerHTML = '';
-  container.style.display = 'flex';
-  container.style.flexDirection = 'column';
-  container.style.gap = '4px';
+  const left = document.getElementById('bb-col-left');
+  const right = document.getElementById('bb-col-right');
+  left.innerHTML = '<div class="tc-col-header">1 — 4</div>';
+  right.innerHTML = '<div class="tc-col-header">5 — 8</div>';
   data.forEach((d, i) => {
     const meta = getMeta(d.team);
     const rankClass = ['r1','r2','r3'][i] || '';
@@ -369,7 +370,7 @@ function renderBigBoard(data) {
       <div class="bb-rally">${d.rally}</div>
       <div class="bb-total${totalChanged?' flash':''}"><span style="font-size:22px;color:rgba(255,255,255,0.35);margin-right:4px">${d.pre}</span>${d.total}</div>
     `;
-    container.appendChild(row);
+    (i < 4 ? left : right).appendChild(row);
   });
 }
 
