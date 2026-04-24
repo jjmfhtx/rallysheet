@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Strake Jesuit Prom Randomizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@400;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sj-green: #004730;
+    --sj-green-deep: #00321f;
+    --sj-gold: #c7940d;
+    --sj-gold-light: #e9b52b;
+    --sj-red: #cf142b;
+    --sj-white: #ffffff;
+    --sj-cream: #f7f3ec;
+    --sj-gray: #8A8681;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: radial-gradient(circle at top, #00593c 0%, var(--sj-green) 50%, var(--sj-green-deep) 100%);
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--sj-white);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 24px 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 36px;
+  }
+
+  header {
+    text-align: center;
+  }
+
+  header h1 {
+    font-family: 'Libre Caslon Text', Georgia, serif;
+    font-weight: 700;
+    font-size: clamp(28px, 5vw, 44px);
+    margin: 0;
+    letter-spacing: 0.5px;
+    line-height: 1.15;
+    color: var(--sj-white);
+  }
+
+  header .accent {
+    display: inline-block;
+    width: 72px;
+    height: 3px;
+    background: var(--sj-gold);
+    margin-top: 16px;
+    border-radius: 2px;
+  }
+
+  /* Wheel */
+  .wheel-stage {
+    position: relative;
+    width: min(360px, 85vw);
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pointer {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 18px solid transparent;
+    border-right: 18px solid transparent;
+    border-top: 28px solid var(--sj-red);
+    z-index: 3;
+    filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35));
+  }
+
+  .wheel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    /* default conic gradient: 2% gold, 98% deep green */
+    background: conic-gradient(var(--sj-gold) 0deg 7.2deg, var(--sj-green-deep) 7.2deg 360deg);
+    box-shadow:
+      0 0 0 8px var(--sj-white),
+      0 0 0 12px var(--sj-gold),
+      0 24px 48px rgba(0,0,0,0.45);
+    transition: transform 0.75s cubic-bezier(0.15, 0.85, 0.25, 1);
+    transform: rotate(0deg);
+  }
+
+  /* Subtle tick marks overlaid on wheel */
+  .wheel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background:
+      repeating-conic-gradient(rgba(255,255,255,0.06) 0deg 1deg, transparent 1deg 3.6deg);
+    pointer-events: none;
+  }
+
+  .hub {
+    position: absolute;
+    width: 22%;
+    height: 22%;
+    background: var(--sj-white);
+    border-radius: 50%;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    font-family: 'Libre Caslon Text', Georgia, serif;
+    color: var(--sj-green);
+    font-weight: 700;
+    font-size: clamp(14px, 2.2vw, 18px);
+    letter-spacing: 1px;
+  }
+
+  /* Spin button */
+  .spin-btn {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--sj-green);
+    background: var(--sj-gold);
+    border: none;
+    padding: 18px 56px;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+    transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .spin-btn:hover:not(:disabled) {
+    background: var(--sj-gold-light);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 22px rgba(0,0,0,0.35);
+  }
+
+  .spin-btn:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  .spin-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Odds toggle */
+  .odds-toggle {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(0,0,0,0.2);
+    padding: 14px 20px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.12);
+    margin-top: 8px;
+  }
+
+  .odds-label {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+
+  .odds-value {
+    font-family: 'Libre Caslon Text', serif;
+    font-weight: 700;
+    color: var(--sj-gold);
+  }
+
+  .switch {
+    position: relative;
+    width: 48px;
+    height: 26px;
+    flex-shrink: 0;
+  }
+
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: rgba(255,255,255,0.25);
+    border-radius: 999px;
+    transition: background 0.25s;
+  }
+
+  .slider::before {
+    content: "";
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    top: 3px;
+    background: var(--sj-white);
+    border-radius: 50%;
+    transition: transform 0.25s;
+  }
+
+  .switch input:checked + .slider {
+    background: var(--sj-gold);
+  }
+
+  .switch input:checked + .slider::before {
+    transform: translateX(22px);
+  }
+
+  /* Result overlay */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 100;
+  }
+
+  .overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .result-card {
+    background: var(--sj-white);
+    color: var(--sj-green);
+    border-radius: 16px;
+    padding: 40px 40px 32px;
+    text-align: center;
+    max-width: 460px;
+    width: 100%;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border-top: 8px solid var(--sj-gold);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .overlay.show .result-card {
+    transform: scale(1);
+  }
+
+  .result-card.lose {
+    border-top-color: var(--sj-gray);
+  }
+
+  .result-card.win {
+    border-top: none;
+    background: linear-gradient(180deg, #fff8e3 0%, var(--sj-white) 60%);
+    box-shadow:
+      0 24px 64px rgba(0,0,0,0.45),
+      0 0 0 4px var(--sj-gold),
+      0 0 48px rgba(199, 148, 13, 0.55);
+    animation: winCardPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes winCardPop {
+    0% { transform: scale(0.3) rotate(-8deg); opacity: 0; }
+    60% { transform: scale(1.08) rotate(2deg); opacity: 1; }
+    80% { transform: scale(0.96) rotate(-1deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+
+  .result-card.win::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, var(--sj-gold), var(--sj-gold-light), var(--sj-gold));
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  .result-headline {
+    font-family: 'Libre Caslon Text', serif;
+    font-size: 40px;
+    font-weight: 700;
+    margin: 0 0 10px;
+    letter-spacing: 1px;
+  }
+
+  .result-card.win .result-headline {
+    font-size: 64px;
+    color: var(--sj-gold);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-shadow: 0 2px 0 rgba(199, 148, 13, 0.25);
+    animation: headlinePulse 1.1s ease-in-out infinite;
+    margin-bottom: 14px;
+  }
+
+  @keyframes headlinePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+  }
+
+  .result-card.lose .result-headline {
+    color: var(--sj-green);
+  }
+
+  .result-sub {
+    font-size: 16px;
+    color: #555;
+    margin: 0 0 28px;
+    line-height: 1.5;
+  }
+
+  .result-card.win .result-sub {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--sj-green);
+  }
+
+  #confetti {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 200;
+  }
+
+  .clear-btn {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--sj-white);
+    background: var(--sj-green);
+    border: none;
+    padding: 14px 36px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .clear-btn:hover {
+    background: #00593c;
+  }
+
+</style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>Strake Jesuit Prom Randomizer</h1>
+      <span class="accent"></span>
+    </header>
+
+    <div class="wheel-stage">
+      <div class="pointer"></div>
+      <div class="wheel" id="wheel"></div>
+      <div class="hub">SJ</div>
+    </div>
+
+    <button class="spin-btn" id="spinBtn">Spin</button>
+
+    <div class="odds-toggle">
+      <span class="odds-label">Odds: <span class="odds-value" id="oddsValue">2 in 100</span></span>
+      <label class="switch" aria-label="Increase odds to 10 in 100">
+        <input type="checkbox" id="oddsToggle" />
+        <span class="slider"></span>
+      </label>
+      <span class="odds-label">Boost to 10 in 100</span>
+    </div>
+
+  </div>
+
+  <canvas id="confetti"></canvas>
+
+  <div class="overlay" id="overlay">
+    <div class="result-card" id="resultCard">
+      <h2 class="result-headline" id="resultHeadline">Winner!</h2>
+      <p class="result-sub" id="resultSub">Nicely done.</p>
+      <button class="clear-btn" id="clearBtn">Close</button>
+    </div>
+  </div>
+
+<script>
+  const wheel = document.getElementById('wheel');
+  const spinBtn = document.getElementById('spinBtn');
+  const overlay = document.getElementById('overlay');
+  const resultCard = document.getElementById('resultCard');
+  const resultHeadline = document.getElementById('resultHeadline');
+  const resultSub = document.getElementById('resultSub');
+  const clearBtn = document.getElementById('clearBtn');
+  const oddsToggle = document.getElementById('oddsToggle');
+  const oddsValue = document.getElementById('oddsValue');
+
+  let spinning = false;
+  let currentRotation = 0;
+
+  function winChance() {
+    return oddsToggle.checked ? 0.10 : 0.02;
+  }
+
+  function applyWheelGradient() {
+    const winDeg = winChance() * 360;
+    wheel.style.background = `conic-gradient(var(--sj-gold) 0deg ${winDeg}deg, var(--sj-green-deep) ${winDeg}deg 360deg)`;
+  }
+
+  function updateOddsLabel() {
+    oddsValue.textContent = oddsToggle.checked ? '10 in 100' : '2 in 100';
+  }
+
+  oddsToggle.addEventListener('change', () => {
+    if (spinning) return;
+    updateOddsLabel();
+    applyWheelGradient();
+  });
+
+  spinBtn.addEventListener('click', () => {
+    if (spinning) return;
+    spinning = true;
+    spinBtn.disabled = true;
+    oddsToggle.disabled = true;
+
+    const p = winChance();
+    const won = Math.random() < p;
+    const winArcDeg = p * 360;
+
+    // Target angle (on the wheel, 0deg = the segment currently at pointer when rotation = 0).
+    // Gold arc lives from 0deg -> winArcDeg. We want the pointer (top of wheel)
+    // to land somewhere in the correct arc after rotation.
+    // With a small margin to avoid visually landing on the arc boundary.
+    const margin = Math.min(0.5, winArcDeg / 4);
+    let targetAngle;
+    if (won) {
+      targetAngle = margin + Math.random() * Math.max(0.1, winArcDeg - 2 * margin);
+    } else {
+      const loseStart = winArcDeg + margin;
+      const loseEnd = 360 - margin;
+      targetAngle = loseStart + Math.random() * (loseEnd - loseStart);
+    }
+
+    // Wheel rotates clockwise. After rotation R, the wheel-angle at the top is (360 - (R mod 360)) mod 360.
+    // Solve for R mod 360 such that the pointer sits at targetAngle:
+    // (360 - R) mod 360 = targetAngle  =>  R mod 360 = (360 - targetAngle) mod 360
+    const desiredMod = (360 - targetAngle) % 360;
+    const fullSpins = 1 + Math.floor(Math.random() * 2); // 1-2 full turns
+    const currentMod = ((currentRotation % 360) + 360) % 360;
+    let delta = desiredMod - currentMod;
+    if (delta <= 0) delta += 360;
+    currentRotation = currentRotation + fullSpins * 360 + delta;
+    wheel.style.transform = `rotate(${currentRotation}deg)`;
+
+    // Show result after transition.
+    setTimeout(() => {
+      showResult(won);
+    }, 820);
+  });
+
+  function showResult(won) {
+    resultCard.classList.remove('win', 'lose');
+    resultCard.classList.add(won ? 'win' : 'lose');
+    if (won) {
+      resultHeadline.textContent = 'Winner!';
+      resultSub.textContent = 'Congratulations — the wheel landed in your favor.';
+      fireConfetti();
+    } else {
+      resultHeadline.textContent = 'Try again';
+      resultSub.textContent = 'Not this spin. Give it another go.';
+    }
+    overlay.classList.add('show');
+  }
+
+  // Confetti
+  const confettiCanvas = document.getElementById('confetti');
+  const cctx = confettiCanvas.getContext('2d');
+  let confettiAnimId = null;
+
+  function sizeCanvas() {
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', sizeCanvas);
+  sizeCanvas();
+
+  function fireConfetti() {
+    if (confettiAnimId) cancelAnimationFrame(confettiAnimId);
+    const colors = ['#c7940d', '#e9b52b', '#004730', '#cf142b', '#ffffff', '#d8a945'];
+    const pieces = [];
+    const count = 140;
+    // Two bursts: from bottom-left and bottom-right, shooting up
+    for (let i = 0; i < count; i++) {
+      const side = i < count / 2 ? -1 : 1;
+      const baseX = side === -1 ? confettiCanvas.width * 0.15 : confettiCanvas.width * 0.85;
+      const angle = (side === -1 ? -Math.PI / 3 : -2 * Math.PI / 3) + (Math.random() - 0.5) * 0.8;
+      const speed = 14 + Math.random() * 10;
+      pieces.push({
+        x: baseX,
+        y: confettiCanvas.height + 10,
+        w: 7 + Math.random() * 6,
+        h: 10 + Math.random() * 8,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        rot: Math.random() * Math.PI * 2,
+        vrot: (Math.random() - 0.5) * 0.4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        alpha: 1
+      });
+    }
+    const start = performance.now();
+    const duration = 2600;
+
+    function frame(now) {
+      cctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      const elapsed = now - start;
+      pieces.forEach(p => {
+        p.vy += 0.38; // gravity
+        p.vx *= 0.995;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vrot;
+        if (elapsed > duration * 0.6) {
+          p.alpha = Math.max(0, 1 - (elapsed - duration * 0.6) / (duration * 0.4));
+        }
+        cctx.save();
+        cctx.globalAlpha = p.alpha;
+        cctx.translate(p.x, p.y);
+        cctx.rotate(p.rot);
+        cctx.fillStyle = p.color;
+        cctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        cctx.restore();
+      });
+      if (elapsed < duration) {
+        confettiAnimId = requestAnimationFrame(frame);
+      } else {
+        cctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        confettiAnimId = null;
+      }
+    }
+    confettiAnimId = requestAnimationFrame(frame);
+  }
+
+  clearBtn.addEventListener('click', () => {
+    overlay.classList.remove('show');
+    spinning = false;
+    spinBtn.disabled = false;
+    oddsToggle.disabled = false;
+    if (confettiAnimId) {
+      cancelAnimationFrame(confettiAnimId);
+      cctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      confettiAnimId = null;
+    }
+  });
+
+  // init
+  updateOddsLabel();
+  applyWheelGradient();
+</script>
+</body>
+</html>
